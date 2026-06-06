@@ -26,24 +26,39 @@ export default function TypingArea({ value, onChange, disabled, language, liveSt
     { label: 'CPM',    value: liveStats.cpm,   accent: false },
   ]
 
-  // প্রতিটি character correct না incorrect সেটা বের করি
-  const renderTargetText = () => {
-    if (!targetText) return null
+ const renderTargetText = () => {
+  if (!targetText) return null
 
-    return targetText.split('').map((char, i) => {
-      let color = 'var(--muted)'       // এখনো টাইপ হয়নি → muted
-      if (i < value.length) {
-        color = value[i] === char
-          ? '#22c55e'   // ✅ সঠিক → সবুজ
-          : '#ef4444'   // ❌ ভুল → লাল
-      }
+  const normalizedTarget = targetText.normalize('NFC')
+  const normalizedValue  = value.normalize('NFC')
+
+  const targetChars = [...normalizedTarget]
+  const typedChars  = [...normalizedValue]
+
+  return targetChars.map((char, i) => {
+    if (i >= typedChars.length) {
       return (
-        <span key={i} style={{ color, transition: 'color 0.1s' }}>
+        <span key={i} style={{ color: 'var(--muted)' }}>
           {char}
         </span>
       )
-    })
-  }
+    }
+    const isCorrect = typedChars[i] === char
+    return (
+      <span
+        key={i}
+        style={{
+          color: isCorrect ? '#22c55e' : '#ef4444',
+          background: isCorrect ? 'transparent' : 'rgba(239,68,68,0.15)',
+          borderRadius: 3,
+          transition: 'color 0.1s',
+        }}
+      >
+        {char}
+      </span>
+    )
+  })
+}
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
