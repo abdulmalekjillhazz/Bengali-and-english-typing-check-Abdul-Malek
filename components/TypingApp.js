@@ -80,9 +80,33 @@ export default function TypingApp() {
     handleComplete
   )
 
-  useEffect(() => {
-    if (running) setElapsed(duration - remaining)
-  }, [remaining, running, duration])
+useEffect(() => {
+  if (running) setElapsed(duration - remaining)
+}, [remaining, running, duration])
+
+// text শেষ হলে নতুন random text লোড করো
+useEffect(() => {
+  if (!targetText || phase !== 'running') return
+
+  const normalizedTarget = targetText.normalize('NFC')
+  const normalizedTyped  = text.normalize('NFC')
+
+  const targetChars = [...normalizedTarget]
+  const typedChars  = [...normalizedTyped]
+
+  if (typedChars.length >= targetChars.length) {
+    const texts = lang === 'বাংলা' ? bengaliTexts : englishTexts
+    let newText = getRandomText(texts)
+
+    while (newText === targetText && texts.length > 1) {
+      newText = getRandomText(texts)
+    }
+
+    setTargetText(newText)
+    setText('')
+    toast('নতুন text এলো! চালিয়ে যাও...', 'info', '🔄')
+  }
+}, [text, targetText, phase, lang])
 
   // ── Core test actions ────────────────────────────────────────────
 
