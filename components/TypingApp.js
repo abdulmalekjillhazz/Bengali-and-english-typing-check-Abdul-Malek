@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import englishTexts from '../data/englishTexts'
+import bengaliTexts from '../data/bengaliTexts'
 
 import Navbar          from './Navbar'
 import SettingsPanel   from './SettingsPanel'
@@ -22,17 +24,15 @@ import { calculateWPM, calculateCPM } from '../utils/calcUtils'
 import { exportToCSV }   from '../utils/exportUtils'
 import { playCompletionSound } from '../utils/soundUtils'
 
-/**
- * TypingApp — the root component.
- *
- * State lives here and is passed down as props. The data flow is:
- *   1. User picks settings → state updates
- *   2. User clicks Start → timer starts, textarea unlocks
- *   3. User types → useTypingStats recalculates live stats
- *   4. Timer ends (or user stops) → finalizeTest() runs
- *   5. Results saved to localStorage, result card shown
- */
+// ── Helper: random item from array ──────────────────────────────────────────
+function getRandomText(arr) {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
 export default function TypingApp() {
+
+  const [targetText, setTargetText] = useState('')
+
   // ── Persisted state ──────────────────────────────────────────────
   const [history,       setHistory]      = useLocalStorage('tst_history', [])
   const [personalBest,  setPersonalBest] = useLocalStorage('tst_personal_best', 0)
@@ -46,7 +46,6 @@ export default function TypingApp() {
   const [customTarget,   setCustomTarget]   = useState('')
 
   // ── Test state ───────────────────────────────────────────────────
-  // phase: 'idle' | 'running' | 'done'
   const [phase,    setPhase]    = useState('idle')
   const [text,     setText]     = useState('')
   const [elapsed,  setElapsed]  = useState(0)
@@ -59,15 +58,18 @@ export default function TypingApp() {
   // ── Live typing stats ────────────────────────────────────────────
   const liveStats = useTypingStats(text, elapsed)
 
+  // ── Load a random target text whenever lang changes ──────────────
+  useEffect(() => {
+    const texts = lang === 'বাংলা' ? bengaliTexts : englishTexts
+    setTargetText(getRandomText(texts))
+  }, [lang])
+
   // ── Timer callbacks ──────────────────────────────────────────────
-  // These are stored as stable refs inside useTimer, so we don't
-  // need to worry about stale closures on text / targetWPM / etc.
   const handleTick = useCallback((rem) => {
     setElapsed(duration - rem)
   }, [duration])
 
   const handleComplete = useCallback(() => {
-    // Timer reached zero — end the test
     endTest(0)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -78,17 +80,12 @@ export default function TypingApp() {
     handleComplete
   )
 
-  // Keep elapsed in sync while running
   useEffect(() => {
     if (running) setElapsed(duration - remaining)
   }, [remaining, running, duration])
 
   // ── Core test actions ────────────────────────────────────────────
 
-  /**
-   * finalizeTest — calculates results, saves to history, shows result card.
-   * @param {number} remSeconds - seconds remaining when the test ended
-   */
   function finalizeTest(remSeconds) {
     const words = countWords(text)
     const chars = countChars(text)
@@ -111,14 +108,10 @@ export default function TypingApp() {
       targetAchieved,
     }
 
-    // Save result to display
     setResult(record)
     setPhase('done')
-
-    // Prepend to history (newest first)
     setHistory((prev) => [record, ...prev])
 
-    // Check personal best
     if (newPB) {
       setPersonalBest(wpm)
       setIsNewPB(true)
@@ -127,27 +120,27 @@ export default function TypingApp() {
       setIsNewPB(false)
     }
 
-    // Notifications
     playCompletionSound()
     toast('Test completed!', 'success', '✅')
     if (targetAchieved) toast(`Target ${targetWPM} WPM achieved!`, 'success', '🎯')
   }
 
-  /** endTest — called by timer completion or Stop button */
   function endTest(remSeconds) {
     stop()
     finalizeTest(remSeconds)
   }
 
   function handleStart() {
-    // Reset everything and start fresh
+    // প্রতিবার Start করলে নতুন random text লোড হবে
+    const texts = lang === 'বাংলা' ? bengaliTexts : englishTexts
+    setTargetText(getRandomText(texts))
+
     reset(duration)
     setText('')
     setElapsed(0)
     setResult(null)
     setIsNewPB(false)
     setPhase('running')
-    // Small delay so reset() completes before start() fires
     setTimeout(() => start(), 50)
     toast('Test started! Type now.', 'info', '⌨️')
   }
@@ -159,12 +152,10 @@ export default function TypingApp() {
   // ── Keyboard shortcuts ───────────────────────────────────────────
   useEffect(() => {
     function onKeyDown(e) {
-      // Ctrl + Enter → Start
       if (e.ctrlKey && e.key === 'Enter') {
         e.preventDefault()
         if (phase === 'idle' || phase === 'done') handleStart()
       }
-      // Esc → Stop
       if (e.key === 'Escape' && phase === 'running') {
         handleStop()
       }
@@ -243,6 +234,7 @@ export default function TypingApp() {
             disabled={isDisabled}
             language={lang}
             liveStats={liveStats}
+            targetText={targetText} 
           />
 
           {/* Start / Stop button */}
@@ -268,8 +260,8 @@ export default function TypingApp() {
           {/* Keyboard hint */}
           <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: 13, marginTop: 10 }}>
             {!isRunning
-              ? <>Press <Kbd>Ctrl+Enter</Kbd> to start</>
-              : <>Press <Kbd>Esc</Kbd> to stop</>
+              ? <><Kbd>Ctrl+Enter</Kbd> চাপুন শুরু করতে</>
+              : <><Kbd>Esc</Kbd> চাপুন বন্ধ করতে</>
             }
           </p>
         </div>
