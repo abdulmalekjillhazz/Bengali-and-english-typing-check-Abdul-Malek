@@ -52,10 +52,14 @@ export default function TypingApp() {
   const [result,   setResult]   = useState(null)
   const [isNewPB,  setIsNewPB]  = useState(false)
 
+  // ── Cumulative stats (একাধিক text এর মোট হিসাব) ─────────────────
+  const [totalWords, setTotalWords] = useState(0)
+  const [totalChars, setTotalChars] = useState(0)
+
   // ── Notifications ────────────────────────────────────────────────
   const { toasts, add: toast, remove: removeToast } = useToast()
 
-  // ── Live typing stats ────────────────────────────────────────────
+  // ── Live typing stats (শুধু current text এর) ────────────────────
   const liveStats = useTypingStats(text, elapsed)
 
   // ── Load a random target text whenever lang changes ──────────────
@@ -80,39 +84,45 @@ export default function TypingApp() {
     handleComplete
   )
 
-useEffect(() => {
-  if (running) setElapsed(duration - remaining)
-}, [remaining, running, duration])
+  useEffect(() => {
+    if (running) setElapsed(duration - remaining)
+  }, [remaining, running, duration])
 
-// text শেষ হলে নতুন random text লোড করো
-useEffect(() => {
-  if (!targetText || phase !== 'running') return
+  // ── text শেষ হলে নতুন random text লোড করো ───────────────────────
+  useEffect(() => {
+    if (!targetText || phase !== 'running') return
 
-  const normalizedTarget = targetText.normalize('NFC')
-  const normalizedTyped  = text.normalize('NFC')
+    const normalizedTarget = targetText.normalize('NFC')
+    const normalizedTyped  = text.normalize('NFC')
 
-  const targetChars = [...normalizedTarget]
-  const typedChars  = [...normalizedTyped]
+    const targetChars = [...normalizedTarget]
+    const typedChars  = [...normalizedTyped]
 
-  if (typedChars.length >= targetChars.length) {
-    const texts = lang === 'বাংলা' ? bengaliTexts : englishTexts
-    let newText = getRandomText(texts)
+    if (typedChars.length >= targetChars.length) {
+      // ✅ clear করার আগে এই text এর stats জমা রাখো
+      setTotalWords(prev => prev + countWords(text))
+      setTotalChars(prev => prev + countChars(text))
 
-    while (newText === targetText && texts.length > 1) {
-      newText = getRandomText(texts)
+      const texts = lang === 'বাংলা' ? bengaliTexts : englishTexts
+      let newText = getRandomText(texts)
+
+      // আগেরটাই আবার না আসে
+      while (newText === targetText && texts.length > 1) {
+        newText = getRandomText(texts)
+      }
+
+      setTargetText(newText)
+      setText('')
+      toast('নতুন text এলো! চালিয়ে যাও...', 'info', '🔄')
     }
-
-    setTargetText(newText)
-    setText('')
-    toast('নতুন text এলো! চালিয়ে যাও...', 'info', '🔄')
-  }
-}, [text, targetText, phase, lang])
+  }, [text, targetText, phase, lang])
 
   // ── Core test actions ────────────────────────────────────────────
 
   function finalizeTest(remSeconds) {
-    const words = countWords(text)
-    const chars = countChars(text)
+    // ✅ সব text এর মোট words + chars হিসাব করো
+    const words = totalWords + countWords(text)
+    const chars = totalChars + countChars(text)
     const usedSeconds = Math.max(duration - remSeconds, 1)
     const wpm = calculateWPM(words, usedSeconds)
     const cpm = calculateCPM(chars, usedSeconds)
@@ -155,7 +165,10 @@ useEffect(() => {
   }
 
   function handleStart() {
-    // প্রতিবার Start করলে নতুন random text লোড হবে
+    // ✅ নতুন test শুরুতে cumulative stats reset করো
+    setTotalWords(0)
+    setTotalChars(0)
+
     const texts = lang === 'বাংলা' ? bengaliTexts : englishTexts
     setTargetText(getRandomText(texts))
 
@@ -257,8 +270,13 @@ useEffect(() => {
             onChange={setText}
             disabled={isDisabled}
             language={lang}
-            liveStats={liveStats}
-            targetText={targetText} 
+            liveStats={{
+              words: totalWords + liveStats.words,
+              chars: totalChars + liveStats.chars,
+              wpm:   liveStats.wpm,
+              cpm:   liveStats.cpm,
+            }}
+            targetText={targetText}
           />
 
           {/* Start / Stop button */}
