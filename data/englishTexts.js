@@ -1,22 +1,24 @@
 const englishTexts = [
-  "Consistent practice is one of the most effective ways to improve any skill. Even small daily efforts can create significant progress over time. Success is rarely achieved overnight. Instead, it is usually the result of patience, discipline, continuous learning, and the willingness to keep moving forward despite challenges.",
-
-  "Web development is a valuable skill that combines creativity and logical thinking. Building real projects helps developers understand how different technologies work together. By creating websites and applications, developers gain practical experience that cannot be achieved through theory alone.",
-
-  "Time management is an essential skill for students and professionals alike. People who learn to organize their tasks and prioritize important activities are often more productive and less stressed. Effective time management allows individuals to achieve their goals while maintaining a healthy balance between work and personal life.",
-
-  "Technology has transformed the way people communicate, learn, and work. From smartphones and cloud computing to artificial intelligence and modern software development, technological innovation continues to create new opportunities and solve complex problems across various industries.",
-
-  "Learning never truly ends. Every new experience, challenge, and project provides an opportunity to gain knowledge and improve existing skills. People who maintain a growth mindset are more likely to adapt to change, overcome obstacles, and achieve long-term success in their chosen fields.",
-  "Learning to type accurately and efficiently is one of the most valuable skills in the modern world. Whether a person is a student, a professional, or someone who enjoys writing, good typing skills can save a significant amount of time every day. The key to becoming a faster typist is not focusing only on speed but also on accuracy. Many beginners make the mistake of trying to type as quickly as possible, which often leads to frequent errors and frustration. A better approach is to practice regularly, maintain proper finger placement, and develop a consistent rhythm. Over time, muscle memory improves naturally, allowing words to flow more smoothly across the keyboard. With patience, dedication, and daily practice, anyone can gradually increase their typing speed and confidence while reducing mistakes and improving overall productivity."
-,"Learning is a lifelong journey that helps individuals grow both personally and professionally. Every new skill acquired opens the door to new opportunities and experiences. In today's fast-paced world, continuous learning is more important than ever. Technology, science, and business are constantly evolving, making it necessary for people to adapt and improve their knowledge. Reading books, attending courses, and practicing regularly can significantly enhance one's abilities. Those who remain curious and committed to learning often find themselves better prepared for challenges and more capable of achieving their goals. Success is not determined by talent alone but also by the willingness to learn and improve every day.",
-
-"Time is one of the most valuable resources available to every person. Unlike money or material possessions, lost time can never be recovered. Effective time management allows people to complete tasks efficiently and maintain a healthy balance between work and personal life. Setting clear goals, creating schedules, and avoiding unnecessary distractions can greatly improve productivity. Many successful individuals attribute their achievements to the disciplined use of their time. Even small daily efforts, when performed consistently, can produce remarkable results over the long term. Therefore, learning how to manage time wisely is an essential skill for personal and professional success.",
-
-"Technology has transformed nearly every aspect of modern life. From communication and education to healthcare and entertainment, technological innovations continue to improve the way people live and work. The internet has connected billions of individuals worldwide, making information more accessible than ever before. Businesses can reach customers across different countries, while students can learn from experts without leaving their homes. Despite these benefits, responsible use of technology remains important. People should develop healthy digital habits and use technological tools to enhance productivity, creativity, and meaningful learning experiences.",
-
-"Perseverance is one of the most important qualities a person can possess. Challenges and setbacks are a natural part of life, but those who continue moving forward despite difficulties often achieve remarkable success. Many famous inventors, scientists, and entrepreneurs faced repeated failures before reaching their goals. Instead of giving up, they learned from their mistakes and improved their approach. Perseverance builds resilience, strengthens confidence, and develops problem-solving skills. By maintaining a positive attitude and remaining committed to long-term objectives, individuals can overcome obstacles and achieve outcomes that once seemed impossible.",
-
-"Reading is a powerful habit that can expand knowledge, improve vocabulary, and strengthen critical thinking skills. Books expose readers to different perspectives, cultures, and ideas, helping them better understand the world around them. Regular reading can also improve concentration and communication abilities. Whether someone prefers fiction, history, science, or self-improvement materials, every book offers an opportunity to learn something new. Developing a daily reading habit does not require a large amount of time; even a few pages each day can lead to significant growth over the course of a year."
-]
+'I practice typing every day so that I can improve my speed, accuracy, and confidence.',
+  'Typing slowly in the beginning helps me understand the keyboard and make fewer mistakes.',
+  'Regular practice is the best way to build a strong habit and become better over time.',
+  'I want to type fast and accurately because good typing skills are useful for study, work, and communication.',
+  'When I focus on the screen and keep my hands in the right position, typing becomes easier.',
+  'Learning something new takes patience, but every small effort brings me closer to success.',
+  'A calm mind helps me type carefully, correct my mistakes, and continue practicing without fear.',
+  'Good habits, daily practice, and a positive attitude can make difficult tasks feel much easier.',
+  'Typing is an important skill because people use computers and phones for learning, writing, and working.',
+  'I should not worry about typing fast at first, because accuracy is more important than speed.',
+  'If I make a mistake, I can try again and use it as a chance to learn something useful.',
+  'Every lesson teaches me new words, better control, and more confidence while typing.',
+  'With enough practice, I can type long sentences smoothly without looking at the keyboard.',
+  'Hard work and patience can turn a beginner into a skilled and confident typist.',
+  'I will keep practicing every day because small progress can become a big achievement.',
+  'The more I type, the more comfortable I become with letters, words, and full sentences.',
+  'Strong typing skills help me finish assignments, write messages, and complete work more quickly.',
+  'I can improve my typing by staying relaxed, sitting properly, and practicing with full attention.',
+  'Learning to type well is not only about speed, but also about focus, accuracy, and consistency.',
+  'Every minute of practice makes my fingers faster, my mind sharper, and my writing smoother.',
+  'Typing practice becomes more enjoyable when I challenge myself with longer and meaningful sentences.',
+  'I believe that steady practice and patience will help me become a better typist every day.', ]
 export default englishTexts
