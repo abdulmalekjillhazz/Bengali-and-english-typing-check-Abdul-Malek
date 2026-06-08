@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import englishTexts from '../data/englishTexts'
 import bengaliTexts from '../data/bengaliTexts'
 
@@ -24,45 +24,48 @@ import { calculateWPM, calculateCPM } from '../utils/calcUtils'
 import { exportToCSV }   from '../utils/exportUtils'
 import { playCompletionSound } from '../utils/soundUtils'
 
-// ── Helper: random item from array ──────────────────────────────────────────
+import useTypingStore from '../store/useTypingStore'
+
 function getRandomText(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
 export default function TypingApp() {
 
-  const [targetText, setTargetText] = useState('')
+  // ── Zustand store ────────────────────────────────────────────────
+  const {
+    lang,         setLang,
+    duration,     setDuration,
+    targetWPM,    setTargetWPM,
+    phase,        setPhase,
+    text,         setText,
+    elapsed,      setElapsed,
+    result,       setResult,
+    isNewPB,      setIsNewPB,
+    targetText,   setTargetText,
+    totalWords,   totalChars,
+    addWords,     addChars,
+    resetStats,
+    getLang,      getDuration,  getTargetWPM,
+    getText,      getTotalWords, getTotalChars,
+  } = useTypingStore()
 
   // ── Persisted state ──────────────────────────────────────────────
-  const [history,       setHistory]      = useLocalStorage('tst_history', [])
-  const [personalBest,  setPersonalBest] = useLocalStorage('tst_personal_best', 0)
-  const [dark,          setDark]         = useDarkMode()
+  const [history,      setHistory]      = useLocalStorage('tst_history', [])
+  const [personalBest, setPersonalBest] = useLocalStorage('tst_personal_best', 0)
+  const [dark,         setDark]         = useDarkMode()
 
   // ── Settings ─────────────────────────────────────────────────────
-  const [lang,           setLang]           = useState('English')
-  const [duration,       setDuration]       = useState(60)
-  const [targetWPM,      setTargetWPM]      = useState(30)
-  const [customDuration, setCustomDuration] = useState('')
-  const [customTarget,   setCustomTarget]   = useState('')
-
-  // ── Test state ───────────────────────────────────────────────────
-  const [phase,    setPhase]    = useState('idle')
-  const [text,     setText]     = useState('')
-  const [elapsed,  setElapsed]  = useState(0)
-  const [result,   setResult]   = useState(null)
-  const [isNewPB,  setIsNewPB]  = useState(false)
-
-  // ── Cumulative stats (একাধিক text এর মোট হিসাব) ─────────────────
-  const [totalWords, setTotalWords] = useState(0)
-  const [totalChars, setTotalChars] = useState(0)
+  const [customDuration, setCustomDuration] = useLocalStorage('tst_custom_duration', '')
+  const [customTarget,   setCustomTarget]   = useLocalStorage('tst_custom_target', '')
 
   // ── Notifications ────────────────────────────────────────────────
   const { toasts, add: toast, remove: removeToast } = useToast()
 
-  // ── Live typing stats (শুধু current text এর) ────────────────────
-  const liveStats = useTypingStats(text, elapsed)
+  // ── Live typing stats ────────────────────────────────────────────
+  const liveStats = useTypingStats(text, elapsed, totalWords, totalChars)
 
-  // ── Load a random target text whenever lang changes ──────────────
+  // ── Load random text when lang changes ───────────────────────────
   useEffect(() => {
     const texts = lang === 'বাংলা' ? bengaliTexts : englishTexts
     setTargetText(getRandomText(texts))
@@ -70,8 +73,8 @@ export default function TypingApp() {
 
   // ── Timer callbacks ──────────────────────────────────────────────
   const handleTick = useCallback((rem) => {
-    setElapsed(duration - rem)
-  }, [duration])
+    setElapsed(getDuration() - rem)
+  }, [])
 
   const handleComplete = useCallback(() => {
     endTest(0)
@@ -85,8 +88,8 @@ export default function TypingApp() {
   )
 
   useEffect(() => {
-    if (running) setElapsed(duration - remaining)
-  }, [remaining, running, duration])
+    if (running) setElapsed(getDuration() - remaining)
+  }, [remaining, running])
 
   // ── text শেষ হলে নতুন random text লোড করো ───────────────────────
   useEffect(() => {
@@ -95,18 +98,15 @@ export default function TypingApp() {
     const normalizedTarget = targetText.normalize('NFC')
     const normalizedTyped  = text.normalize('NFC')
 
-    const targetChars = [...normalizedTarget]
-    const typedChars  = [...normalizedTyped]
+    const tChars = [...normalizedTarget]
+    const uChars = [...normalizedTyped]
 
-    if (typedChars.length >= targetChars.length) {
-      // ✅ clear করার আগে এই text এর stats জমা রাখো
-      setTotalWords(prev => prev + countWords(text))
-      setTotalChars(prev => prev + countChars(text))
+    if (uChars.length >= tChars.length) {
+      addWords(countWords(getText()))
+      addChars(countChars(getText()))
 
-      const texts = lang === 'বাংলা' ? bengaliTexts : englishTexts
+      const texts = getLang() === 'বাংলা' ? bengaliTexts : englishTexts
       let newText = getRandomText(texts)
-
-      // আগেরটাই আবার না আসে
       while (newText === targetText && texts.length > 1) {
         newText = getRandomText(texts)
       }
@@ -115,30 +115,37 @@ export default function TypingApp() {
       setText('')
       toast('নতুন text এলো! চালিয়ে যাও...', 'info', '🔄')
     }
-  }, [text, targetText, phase, lang])
+  }, [text, targetText, phase])
 
   // ── Core test actions ────────────────────────────────────────────
 
   function finalizeTest(remSeconds) {
-    // ✅ সব text এর মোট words + chars হিসাব করো
-    const words = totalWords + countWords(text)
-    const chars = totalChars + countChars(text)
-    const usedSeconds = Math.max(duration - remSeconds, 1)
+    // ✅ store থেকে সরাসরি — কোনো delay নেই
+    const currentLang       = getLang()
+    const currentDuration   = getDuration()
+    const currentTargetWPM  = getTargetWPM()
+    const currentText       = getText()
+    const currentTotalWords = getTotalWords()
+    const currentTotalChars = getTotalChars()
+
+    const words = currentTotalWords + countWords(currentText)
+    const chars = currentTotalChars + countChars(currentText)
+    const usedSeconds = Math.max(currentDuration - remSeconds, 1)
     const wpm = calculateWPM(words, usedSeconds)
     const cpm = calculateCPM(chars, usedSeconds)
-    const targetAchieved = wpm >= targetWPM
+    const targetAchieved = wpm >= Number(currentTargetWPM)
     const newPB = wpm > (personalBest || 0)
 
     const record = {
       id:             Date.now(),
       timestamp:      Date.now(),
-      language:       lang,
-      duration:       duration,
+      language:       currentLang,
+      duration:       currentDuration,
       words,
       chars,
       wpm,
       cpm,
-      targetWPM,
+      targetWPM:      currentTargetWPM,
       targetAchieved,
     }
 
@@ -156,7 +163,7 @@ export default function TypingApp() {
 
     playCompletionSound()
     toast('Test completed!', 'success', '✅')
-    if (targetAchieved) toast(`Target ${targetWPM} WPM achieved!`, 'success', '🎯')
+    if (targetAchieved) toast(`Target ${currentTargetWPM} WPM achieved!`, 'success', '🎯')
   }
 
   function endTest(remSeconds) {
@@ -165,18 +172,13 @@ export default function TypingApp() {
   }
 
   function handleStart() {
-    // ✅ নতুন test শুরুতে cumulative stats reset করো
-    setTotalWords(0)
-    setTotalChars(0)
+    resetStats()
 
-    const texts = lang === 'বাংলা' ? bengaliTexts : englishTexts
+    const texts = getLang() === 'বাংলা' ? bengaliTexts : englishTexts
     setTargetText(getRandomText(texts))
 
-    reset(duration)
-    setText('')
+    reset(getDuration())
     setElapsed(0)
-    setResult(null)
-    setIsNewPB(false)
     setPhase('running')
     setTimeout(() => start(), 50)
     toast('Test started! Type now.', 'info', '⌨️')
@@ -237,7 +239,6 @@ export default function TypingApp() {
         gap: 28,
       }}>
 
-        {/* ── Settings + Timer row ── */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: isRunning ? '1fr auto' : '1fr',
@@ -247,11 +248,11 @@ export default function TypingApp() {
           <div style={card}>
             <h2 style={sectionTitle}>Settings</h2>
             <SettingsPanel
-              lang={lang}                   setLang={setLang}
-              duration={duration}           setDuration={setDuration}
-              targetWPM={targetWPM}         setTargetWPM={setTargetWPM}
+              lang={lang}                     setLang={setLang}
+              duration={duration}             setDuration={setDuration}
+              targetWPM={targetWPM}           setTargetWPM={setTargetWPM}
               customDuration={customDuration} setCustomDuration={setCustomDuration}
-              customTarget={customTarget}   setCustomTarget={setCustomTarget}
+              customTarget={customTarget}     setCustomTarget={setCustomTarget}
               disabled={isRunning}
             />
           </div>
@@ -263,23 +264,16 @@ export default function TypingApp() {
           )}
         </div>
 
-        {/* ── Typing area ── */}
         <div style={card}>
           <TypingArea
             value={text}
             onChange={setText}
             disabled={isDisabled}
             language={lang}
-            liveStats={{
-              words: totalWords + liveStats.words,
-              chars: totalChars + liveStats.chars,
-              wpm:   liveStats.wpm,
-              cpm:   liveStats.cpm,
-            }}
+            liveStats={liveStats}
             targetText={targetText}
           />
 
-          {/* Start / Stop button */}
           <div style={{ display: 'flex', gap: 12, marginTop: 20, justifyContent: 'center' }}>
             {!isRunning ? (
               <button
@@ -299,7 +293,6 @@ export default function TypingApp() {
             )}
           </div>
 
-          {/* Keyboard hint */}
           <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: 13, marginTop: 10 }}>
             {!isRunning
               ? <><Kbd>Ctrl+Enter</Kbd> চাপুন শুরু করতে</>
@@ -308,7 +301,6 @@ export default function TypingApp() {
           </p>
         </div>
 
-        {/* ── Results ── */}
         {result && (
           <ResultCard
             result={result}
@@ -317,14 +309,12 @@ export default function TypingApp() {
           />
         )}
 
-        {/* ── Statistics dashboard ── */}
         {history.length > 0 && (
           <div style={card}>
             <StatsDashboard history={history} personalBest={personalBest} />
           </div>
         )}
 
-        {/* ── History table ── */}
         <div style={card}>
           <h2 style={{ margin: '0 0 20px', fontSize: 20, fontWeight: 800, color: 'var(--text)' }}>
             Test History
@@ -341,8 +331,6 @@ export default function TypingApp() {
     </>
   )
 }
-
-// ── Shared style objects ─────────────────────────────────────────────────────
 
 const card = {
   background: 'var(--card-bg)',
