@@ -22,5 +22,20 @@ const englishTexts = [  'I practice typing every day because I want to improve m
   'I believe that steady practice, patience, and confidence will help me become a better typist and a better writer every day.',
   'A person who practices regularly can slowly overcome fear, reduce typing mistakes, and feel proud of visible improvement.',
   'Good typing habits save time, reduce stress, and make writing on a computer much easier in school, work, and personal life.'
- ]
+ 
+                     'The first light of morning feels like a quiet reminder that every day gives us another chance to begin again.',
+'A person’s true beauty is not found only in appearance, but in kindness, respect, patience, and the way they treat others.',
+'Sometimes one brave decision can change the direction of an entire life, if a person has enough faith in themselves.',
+'Some people are quiet like a peaceful river, but inside them lives a deep world of feelings, memories, and dreams.',
+'The dream that keeps a person awake at night is often the same dream that teaches them to work harder every day.',
+'After the rain, the smell of the earth can calm the heart, just as one kind word from someone dear can brighten the whole day.',
+'Life does not give every answer at once; some answers become clear slowly through time, patience, and experience.',
+'A good heart is often more valuable than a beautiful face, because the heart carries the real identity of a person.',
+'The person who can make others smile while carrying their own pain has a strength that ordinary eyes may never fully see.',
+'Soft moonlight can make even the darkest night beautiful, just as gentle behavior can make difficult relationships easier.',
+
+
+
+
+14:48]
 export default englishTexts
