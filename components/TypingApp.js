@@ -23,6 +23,8 @@ import { countWords, countChars } from '../utils/textUtils'
 import { calculateWPM, calculateCPM } from '../utils/calcUtils'
 import { exportToCSV }   from '../utils/exportUtils'
 import { playCompletionSound } from '../utils/soundUtils'
+import { playCorrectSound, playWrongSound } from '../utils/typingSound'
+
 
 import useTypingStore from '../store/useTypingStore'
 
@@ -58,6 +60,7 @@ export default function TypingApp() {
   // ── Settings ─────────────────────────────────────────────────────
   const [customDuration, setCustomDuration] = useLocalStorage('tst_custom_duration', '')
   const [customTarget,   setCustomTarget]   = useLocalStorage('tst_custom_target', '')
+  const [soundOn,        setSoundOn]        = useLocalStorage('tst_typing_sound', true)
 
   // ── Notifications ────────────────────────────────────────────────
   const { toasts, add: toast, remove: removeToast } = useToast()
