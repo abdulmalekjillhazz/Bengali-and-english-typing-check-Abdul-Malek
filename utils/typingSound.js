@@ -1,46 +1,36 @@
-function clickBuffer(ctx, duration, type) {
-  const bufferSize = ctx.sampleRate * duration
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-  const data = buffer.getChannelData(0)
-
-  for (let i = 0; i < bufferSize; i++) {
-    // white noise, decaying envelope
-    const decay = Math.pow(1 - i / bufferSize, 4)
-    data[i] = (Math.random() * 2 - 1) * decay
-  }
-
-  const source = ctx.createBufferSource()
-  source.buffer = buffer
-
-  const filter = ctx.createBiquadFilter()
-  filter.type = 'bandpass'
-<<<<<<< HEAD
-  filter.frequency.value = type === 'correct' ? 1200: 400
-=======
-  filter.frequency.value = type === 'correct' ? 7000: 5000
->>>>>>> b7a8b75 (build verify by locally)
-  filter.Q.value = 1.2
-
+function playTone(ctx, frequency, duration, type, startTime, volume) {
+  const osc = ctx.createOscillator()
   const gain = ctx.createGain()
-  gain.gain.value = type === 'correct' ? 0.8 : 0.9
 
-  source.connect(filter)
-  filter.connect(gain)
+  osc.type = type
+  osc.frequency.setValueAtTime(frequency, ctx.currentTime + startTime)
+
+  gain.gain.setValueAtTime(0, ctx.currentTime + startTime)
+  gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + startTime + 0.01)
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration)
+
+  osc.connect(gain)
   gain.connect(ctx.destination)
 
-  source.start()
+  osc.start(ctx.currentTime + startTime)
+  osc.stop(ctx.currentTime + startTime + duration)
 }
 
 export function playCorrectSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    clickBuffer(ctx, 0.03, 'correct')
+    // আর্কেড পপ - দুটো sharp square নোট
+    playTone(ctx, 1000, 0.05, 'square', 0, 0.15)
+    playTone(ctx, 1500, 0.08, 'square', 0.05, 0.15)
   } catch (_) {}
 }
 
 export function playWrongSound() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)()
-    clickBuffer(ctx, 0.06, 'wrong')
+    // আর্কেড ফেইল - নিচের দিকে নামতে থাকা ৩টা square নোট
+    playTone(ctx, 400, 0.08, 'square', 0, 0.25)
+    playTone(ctx, 300, 0.08, 'square', 0.08, 0.25)
+    playTone(ctx, 200, 0.15, 'square', 0.16, 0.25)
   } catch (_) {}
 }
