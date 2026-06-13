@@ -266,18 +266,29 @@ export default function TypingApp() {
             </div>
           )}
         </div>
-
-        <div style={card}>
+<div style={card}>
           <TypingArea
             value={text}
-            onChange={setText}
+            onChange={(val) => {
+              if (soundOn && val.length > text.length) {
+                const i = val.length - 1
+                const typedChar  = val.normalize('NFC')[i]
+                const targetChar = (targetText || '').normalize('NFC')[i]
+                if (typedChar === targetChar) {
+                  playCorrectSound()
+                } else {
+                  playWrongSound()
+                }
+              }
+              setText(val)
+            }}
             disabled={isDisabled}
             language={lang}
             liveStats={liveStats}
             targetText={targetText}
           />
 
-          <div style={{ display: 'flex', gap: 12, marginTop: 20, justifyContent: 'center' }}>
+     <div style={{ display: 'flex', gap: 12, marginTop: 20, justifyContent: 'center' }}>
             {!isRunning ? (
               <button
                 onClick={handleStart}
@@ -294,6 +305,16 @@ export default function TypingApp() {
                 ■ Stop Test
               </button>
             )}
+
+            <button
+              onClick={() => setSoundOn((s) => !s)}
+              style={{
+                ...primaryBtn(soundOn ? '#10b981' : '#6b7280'),
+                padding: '14px 24px',
+              }}
+            >
+              {soundOn ? '🔊 Sound On' : '🔇 Sound Off'}
+            </button>
           </div>
 
           <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: 13, marginTop: 10 }}>

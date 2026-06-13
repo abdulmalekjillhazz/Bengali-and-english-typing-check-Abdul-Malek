@@ -60,7 +60,7 @@ export default function ResultCard({ result, personalBest, isNewPB }) {
             borderRadius: 999,
             fontSize: 13,
             fontWeight: 700,
-            background: achieved ? '#10b981' : '#f59e0b',
+            background: achieved ? '#10b981' : '#5f5950',
             color: '#fff',
           }}>
             {achieved ? '✅ Target Achieved' : '📈 Need Improvement'}
