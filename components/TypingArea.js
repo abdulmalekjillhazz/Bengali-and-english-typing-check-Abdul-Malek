@@ -47,13 +47,18 @@ export default function TypingArea({ value, onChange, disabled, language, liveSt
     return (
       <span
         key={i}
-        style={{
-          color: isCorrect ? '#22c55e' : '#ef4444',
-          background: isCorrect ? 'transparent' : 'rgba(239,68,68,0.15)',
-          borderRadius: 3,
-          transition: 'color 0.1s',
-        }}
-      >
+style={{
+  color: isCorrect ? '#22c55e' : '#ef4444',
+  background: isCorrect 
+    ? 'transparent' 
+    : (char === ' ' ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.15)'),
+  textDecoration: isCorrect ? 'none' : 'line-through',
+  textDecorationColor: '#ffffff',
+  textDecorationThickness: '2px',
+  borderRadius: 3,
+  transition: 'color 0.1s',
+}}
+>
         {char}
       </span>
     )
