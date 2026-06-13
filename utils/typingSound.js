@@ -14,7 +14,11 @@ function clickBuffer(ctx, duration, type) {
 
   const filter = ctx.createBiquadFilter()
   filter.type = 'bandpass'
+<<<<<<< HEAD
   filter.frequency.value = type === 'correct' ? 1200: 400
+=======
+  filter.frequency.value = type === 'correct' ? 7000: 5000
+>>>>>>> b7a8b75 (build verify by locally)
   filter.Q.value = 1.2
 
   const gain = ctx.createGain()
